@@ -4,17 +4,30 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.inno.x_clients.helper.CompanyApiHelper;
+import ru.inno.x_clients.model.AuthResponse;
+import ru.inno.x_clients.model.CreateCompanyRequest;
+import ru.inno.x_clients.model.CreateCompanyResponse;
 
 import static io.restassured.RestAssured.given;
-import static io.restassured.matcher.RestAssuredMatchers.*;
 import static org.hamcrest.Matchers.*;
 
 public class CompanyContractTest {
 
+    CompanyApiHelper helper;
+
     @BeforeAll
-    public static void setUp(){
+    public static void setUp() {
         RestAssured.baseURI = "https://x-clients-be.onrender.com";
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+
+    }
+
+    @BeforeEach
+    public void setUpL() {
+        helper = new CompanyApiHelper();
     }
 
     @Test
@@ -30,7 +43,7 @@ public class CompanyContractTest {
     }
 
     @Test
-    public void iCanAuth(){
+    public void iCanAuth() {
         String body = """
                 {
                       "username": "leonardo",
@@ -50,42 +63,37 @@ public class CompanyContractTest {
     }
 
     @Test
-    public void iCanCreatNewCompany(){
-        String authBody = """
-                {
-                  "username": "leonardo",
-                  "password": "leads"
-                }
-                """;
+    public void iCanCreateNewCompany() {
+        AuthResponse info = helper.auth("leonardo", "leads");
 
-        String createBody = """
-                {
-                  "name": "Inno",
-                  "description": "курс aqa java"
-                }
-                """;
+        CreateCompanyRequest createCompanyRequest = new CreateCompanyRequest("Innopolis", "Онлайн-курсы");
 
-        // получить токен
-        Response response = given()
-                .basePath("/auth/login")
-                .body(authBody)
-                .contentType(ContentType.JSON)
-                .when()
-                .post();
-
-        String token = response.jsonPath().getString("userToken");
-
-        // создать компанию
         given()
                 .basePath("company")
-                .body(createBody)
-                .header("x-client-token", token)
+                .body(createCompanyRequest)
+                .header("x-client-token", info.userToken())
                 .contentType(ContentType.JSON)
                 .when()
                 .post()
                 .then()
+                .assertThat()
                 .statusCode(201)
+                .and()
                 .body("id", is(greaterThan(0)));
     }
 
+    @Test
+    public void getCompany() {
+        helper.printCompanyInfo(3458);
+    }
+
+    @Test
+    public void iCanDeleteCompany() {
+
+        CreateCompanyResponse response = helper.createCompany("Innopolis", "Онлайн-курсы");
+        Response r = helper.deleteCompany(response.id());
+
+        r.then().statusCode(200);
+
+    }
 }
