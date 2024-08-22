@@ -27,10 +27,10 @@ public class CompanyBusinessTest {
 
         // Вариант #3 решения проблемы с неизвестными полями в JSON.
         // Переписать конфиг RestAssured. Подложить свой ObjectMapper с настройками
-//        ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-//        RestAssured.config = RestAssured.config().objectMapperConfig(
-//                objectMapperConfig().jackson2ObjectMapperFactory((type, s) -> mapper)
-//        );
+        ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        RestAssured.config = RestAssured.config().objectMapperConfig(
+                objectMapperConfig().jackson2ObjectMapperFactory((type, s) -> mapper)
+        );
     }
 
     @Test
