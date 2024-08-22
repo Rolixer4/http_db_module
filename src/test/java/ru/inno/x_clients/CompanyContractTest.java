@@ -22,7 +22,6 @@ public class CompanyContractTest {
     public static void setUp() {
         RestAssured.baseURI = "https://x-clients-be.onrender.com";
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
-
     }
 
     @BeforeEach

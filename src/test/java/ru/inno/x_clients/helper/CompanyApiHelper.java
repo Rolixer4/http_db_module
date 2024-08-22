@@ -2,10 +2,9 @@ package ru.inno.x_clients.helper;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
-import ru.inno.x_clients.model.AuthRequest;
-import ru.inno.x_clients.model.AuthResponse;
-import ru.inno.x_clients.model.CreateCompanyRequest;
-import ru.inno.x_clients.model.CreateCompanyResponse;
+import ru.inno.x_clients.model.*;
+
+import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
 
@@ -43,7 +42,6 @@ public class CompanyApiHelper {
                 .contentType(ContentType.JSON)
                 .when()
                 .post().body().as(CreateCompanyResponse.class);
-
     }
 
     public Response deleteCompany(int id){
@@ -57,4 +55,22 @@ public class CompanyApiHelper {
                 .get("{id}", id);
 
     }
+
+    public Optional<Company> getById(int id) throws InterruptedException {
+        Thread.sleep(3000);
+        Response response = given()
+                .basePath("company")
+                .pathParam("id", id)
+                .when().get("/{id}");
+
+        String header = response.header("Content-Length");
+        if (header != null && header.equals("0")){
+            return Optional.empty();
+
+        }
+
+        Company company = response.as(Company.class);
+        return Optional.of(company);
+    }
+
 }
