@@ -40,7 +40,6 @@
             <groupId>org.instancio</groupId>
             <artifactId>instancio-junit</artifactId>
             <version>5.0.1</version>
-            <scope>test</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp -->
@@ -62,6 +61,13 @@
             <groupId>com.atlassian.oai</groupId>
             <artifactId>swagger-request-validator-restassured</artifactId>
             <version>2.41.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.4</version>
         </dependency>
 
     </dependencies>
