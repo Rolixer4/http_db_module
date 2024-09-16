@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table(name = "company", schema = "public", catalog = "x_clients_fxd0")
+@Table(name = "company", schema = "public", catalog = "x_clients_db_75hr")
 public class CompanyEntity {
     @Id
     @Column

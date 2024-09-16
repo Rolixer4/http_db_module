@@ -6,7 +6,6 @@ import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.TypedQuery;
 import jakarta.persistence.spi.PersistenceUnitInfo;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.junit.jupiter.api.*;
@@ -85,6 +84,7 @@ public class ContractTests {
     }
 
     @Test
+    @DisplayName("Проверка авторизации через токен")
     public void iCanAuth() {
         given()
                 .basePath("auth/login")
@@ -100,9 +100,8 @@ public class ContractTests {
     }
 
     @Test
+    @DisplayName("При создании сотрудника статус-код 201 и Content-Type JSON")
     public void iCanCreateANewEmployee() {
-        EmployeeEntity empl = new EmployeeEntity("Валерий", "Жмышенко", "Альбертович", "89983465879", "mafioznik@zona.com", true, companyId);
-
         given()
                 .basePath("employee")
                 .header("x-client-token", auth.userToken())
@@ -116,6 +115,7 @@ public class ContractTests {
     }
 
     @Test
+    @DisplayName("При получении сотрудника по id статус-код 200 и Content-Type JSON")
     public void iCanGetEmployeeById() {
         given()
                 .basePath("employee")
@@ -128,6 +128,7 @@ public class ContractTests {
     }
 
     @Test
+    @DisplayName("При изменении информации о сотруднике статус-код 200 и Content-Type JSON")
     public void iCanChangeEmployeeInfo() {
         given()
                 .basePath("employee")
@@ -142,12 +143,13 @@ public class ContractTests {
     }
 
     @Test
+    @DisplayName("При получении сотрудника несуществующей компании статус-код 200 и Content-Type JSON")
     public void getListOfEmployeeNotExistedCompany() {
         given()
                 .log().all()
                 .basePath("employee")
                 .contentType(ContentType.JSON)
-                .queryParam("company", 1-companyId)
+                .queryParam("company", 1 - companyId)
                 .when()
                 .get()
                 .then()
@@ -156,16 +158,74 @@ public class ContractTests {
     }
 
     @Test
+    @DisplayName("При создании сотрудника в несуществующей компании статус-код 500 и Content-Type JSON")
     public void createEmployeeNotExistedCompany() {
         given()
                 .basePath("employee")
                 .header("x-client-token", auth.userToken())
-                .body(helper.createFullEmployee(1-companyId))
+                .body(helper.createFullEmployee(1 - companyId))
                 .contentType(ContentType.JSON)
                 .when()
                 .post()
                 .then()
                 .statusCode(500)
+                .contentType("application/json; charset=utf-8 ");
+    }
+
+    @Test
+    @DisplayName("При создании сотрудника без авторизационного токена статус-код 401 и Content-Type JSON")
+    public void createEmployeeWithoutToken() {
+        given()
+                .basePath("employee")
+                .body(helper.createFullEmployee(companyId))
+                .contentType(ContentType.JSON)
+                .when()
+                .post()
+                .then()
+                .statusCode(401)
+                .contentType("application/json; charset=utf-8 ");
+    }
+
+    @Test
+    @DisplayName("При запросе несуществующего сотрудника статус-код 404 и Content-Type JSON")
+    public void getEmployeeWithNotExistedId() {
+        given()
+                .basePath("employee")
+                .contentType(ContentType.JSON)
+                .when()
+                .get("{id}", 1 - companyId)
+                .then()
+                .statusCode(404)
+                .contentType("application/json; charset=utf-8 ");
+    }
+
+    @Test
+    @DisplayName("При изменении информации о несуществующем сотруднике статус-код 404 и Content-Type JSON")
+    public void changeEmployeeInfoNotExistedId() {
+        given()
+                .basePath("employee")
+                .header("x-client-token", auth.userToken())
+                .contentType(ContentType.JSON)
+                .body(helper.randomEmployee(companyId))
+                .when()
+                .patch("{id}", 1 - companyId)
+                .then()
+                .statusCode(404)
+                .contentType("application/json; charset=utf-8 ");
+    }
+
+    @Test
+    @DisplayName("При изменении всей информации о сотруднике статус-код 200 и Content-Type JSON")
+    public void changeFullEmployeeInfo() {
+        given()
+                .basePath("employee")
+                .header("x-client-token", auth.userToken())
+                .contentType(ContentType.JSON)
+                .body(helper.createFullEmployee(companyId))
+                .when()
+                .patch("{id}", helper.createNewEmployee(companyId, auth.userToken()))
+                .then()
+                .statusCode(200)
                 .contentType("application/json; charset=utf-8 ");
     }
 }
